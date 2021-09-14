@@ -1,17 +1,29 @@
-import time
-
+import os
+import json
 import requests
-while True:
-    i = requests.get("http://api.exchangeratesapi.io/v1/latest?access_key=df0fa438a8cdf3661bcd021419339dd4&symbols=USD,AUD,CAD,PLN,MXN")
 
-    print()
-    import json
-    a=json.loads(i.text)
-    print()
-    del a["success"]
-    del a["timestamp"]
-    with (open("htyui.json","w")) as file:
-        json.dump(a, file)
-    file.close()
-    time.sleep(3)
-    print(a)
+
+BASE_URL = 'http://api.exchangeratesapi.io/v1/latest'
+
+ACCESS_KEY = os.getenv('ACCESS_KEY')
+SYMBOLS = os.getenv('SYMBOLS', 'USD,AUD,CAD,PLN,MXN')
+
+URL = f'{BASE_URL}?access_key={ACCESS_KEY}&symbols={SYMBOLS}'
+
+def update_rates(url: str):
+    response = requests.get(url)
+    response_json = json.loads(response.text)
+
+    del response_json["success"]
+    del response_json["timestamp"]
+
+    write_to_file(response_json, 'htyui')
+
+    print(response_json)
+
+def write_to_file(data: dict, file_name: str = 'no_name'):
+    with open(f'{file_name}.json', 'w') as file:
+        json.dump(data, file)
+
+if __name__ == '__main__':
+    update_rates(URL)
